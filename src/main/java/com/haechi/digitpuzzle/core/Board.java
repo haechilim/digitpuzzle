@@ -6,6 +6,8 @@ public class Board {
     private static final int ROWS = 5;
     private static final int COLUMNS = 5;
     private Cell[][] cells;
+    private int nullCellX;
+    private int nullCellY;
     private PuzzleFrame puzzleFrame;
 
     public void init() {
@@ -46,6 +48,7 @@ public class Board {
 
         for(int y = 0; y < COLUMNS; y++) {
             for(int x = 0; x < ROWS; x++) {
+                if(x == ROWS - 1 && y == COLUMNS - 1) break;
                 if(cells[x][y].getNumber() != count) return false;
 
                 count++;
@@ -57,29 +60,61 @@ public class Board {
 
     private void movePeice(int posX, int posY) {
         if(isMovablePeice(posX + 1, posY)) {
-            cells[posX + 1][posY].setNumber(cells[posX][posY].getNumber());
-            cells[posX][posY].setNumber(0);
+            changeCell(posX + 1, posY, posX, posY);
             return;
         }
 
         if(isMovablePeice(posX - 1, posY)) {
-            cells[posX - 1][posY].setNumber(cells[posX][posY].getNumber());
-            cells[posX][posY].setNumber(0);
+            changeCell(posX - 1, posY, posX, posY);
             return;
         }
 
         if(isMovablePeice(posX, posY + 1)) {
-            cells[posX][posY + 1].setNumber(cells[posX][posY].getNumber());
-            cells[posX][posY].setNumber(0);
+            changeCell(posX, posY + 1, posX, posY);
             return;
         }
 
         if(isMovablePeice(posX, posY - 1)) {
-            cells[posX][posY - 1].setNumber(cells[posX][posY].getNumber());
-            cells[posX][posY].setNumber(0);
+            changeCell(posX, posY - 1, posX, posY);
             return;
         }
     }
+
+    private void changeCell(int posX, int posY, int posX2, int posY2) {
+        if(validIndex(posX, posY) && validIndex(posX2, posY2)) {
+            cells[posX][posY].setNumber(cells[posX2][posY2].getNumber());
+            cells[posX2][posY2].setNumber(0);
+            nullCellX = posX2;
+            nullCellY = posY2;
+        }
+    }
+
+    public void shuffle() {
+        setNullCell();
+
+        for(int  i = 0; i < 100; i++) {
+            int direction = (int)(Math.random() * 4);
+
+            if(direction == 0) changeCell(nullCellX, nullCellY, nullCellX + 1, nullCellY);
+            if(direction == 1) changeCell(nullCellX, nullCellY, nullCellX - 1, nullCellY);
+            if(direction == 2) changeCell(nullCellX, nullCellY, nullCellX, nullCellY + 1);
+            if(direction == 3) changeCell(nullCellX, nullCellY, nullCellX, nullCellY - 1);
+        }
+
+        puzzleFrame.redraw();
+    }
+
+    private void setNullCell() {
+        for(int y = 0; y < COLUMNS; y++) {
+            for(int x = 0; x < ROWS; x++) {
+                if(cells[x][y].getNumber() == 0) {
+                    nullCellX = x;
+                    nullCellY = y;
+                }
+            }
+        }
+    }
+
 
     private boolean isMovablePeice(int posX, int posY) {
         return validIndex(posX, posY) && cells[posX][posY].getNumber() == 0;
@@ -89,13 +124,28 @@ public class Board {
         return (posX >= 0 && posX < ROWS) && (posY >= 0 && posY < COLUMNS);
     }
 
+    private String timer(int time) {
+        String second;
+        String minute;
+        String hour;
+
+        second = time % 60 < 10 ? (0 + "") + (time % 60 + "") : time % 60 + "";
+        minute = time / 60 % 60 < 10 ? (0 + "") + (time / 60 % 60 + "") : time / 60 % 60 + "";
+        hour = time / 60 / 60 < 10 ? (0 + "") + (time / 60 / 60 + "") : time / 60 / 60 + "";
+
+        return hour + ":" + minute + ":" + second;
+    }
+
     public Cell[][] getCells() {
         return cells;
     }
 
     public void cellClicked(int posX, int posY) {
+        for(int time = 0; time < 10000; time++) {
+            System.out.println(timer(time));
+        }
         movePeice(posX, posY);
-        if(checkComplete()) System.out.println("ㅈㅈ");
+        if(checkComplete()) System.out.println("완성");
         puzzleFrame.redraw();
     }
 }
