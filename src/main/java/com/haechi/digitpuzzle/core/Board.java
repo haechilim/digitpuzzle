@@ -9,6 +9,7 @@ public class Board {
     private int nullCellX;
     private int nullCellY;
     private PuzzleFrame puzzleFrame;
+    private int time;
 
     public void init() {
         makeCells();
@@ -19,24 +20,23 @@ public class Board {
     }
 
     private void makeCells() {
-        int number = 0;
-
         cells = new Cell[ROWS][];
 
         for(int x = 0; x < ROWS; x++) {
             cells[x] = new Cell[COLUMNS];
 
             for(int y = 0; y < COLUMNS; y++) {
-                cells[x][y] = new Cell(number++);
+                cells[x][y] = new Cell(0);
             }
         }
 
-        int count = 1;
+        int number = 1;
+
         for(int y = 0; y < COLUMNS; y++) {
             for(int x = 0; x < ROWS; x++) {
-                if(x==3 && y==4) cells[x][y].setNumber(0);
-                else if(x==4 && y==4) cells[x][y].setNumber(24);
-                else cells[x][y].setNumber(count++);
+                //if(x==3 && y==4) cells[x][y].setNumber(0);
+                //else if(x==4 && y==4) cells[x][y].setNumber(24);
+                cells[x][y].setNumber(number++);
             }
         }
     }
@@ -48,7 +48,7 @@ public class Board {
 
         for(int y = 0; y < COLUMNS; y++) {
             for(int x = 0; x < ROWS; x++) {
-                if(x == ROWS - 1 && y == COLUMNS - 1) break;
+                //if(x == ROWS - 1 && y == COLUMNS - 1) break;
                 if(cells[x][y].getNumber() != count) return false;
 
                 count++;
@@ -89,21 +89,6 @@ public class Board {
         }
     }
 
-    public void shuffle() {
-        setNullCell();
-
-        for(int  i = 0; i < 100; i++) {
-            int direction = (int)(Math.random() * 4);
-
-            if(direction == 0) changeCell(nullCellX, nullCellY, nullCellX + 1, nullCellY);
-            if(direction == 1) changeCell(nullCellX, nullCellY, nullCellX - 1, nullCellY);
-            if(direction == 2) changeCell(nullCellX, nullCellY, nullCellX, nullCellY + 1);
-            if(direction == 3) changeCell(nullCellX, nullCellY, nullCellX, nullCellY - 1);
-        }
-
-        puzzleFrame.redraw();
-    }
-
     private void setNullCell() {
         for(int y = 0; y < COLUMNS; y++) {
             for(int x = 0; x < ROWS; x++) {
@@ -124,10 +109,24 @@ public class Board {
         return (posX >= 0 && posX < ROWS) && (posY >= 0 && posY < COLUMNS);
     }
 
-    private String timer(int time) {
+    public Cell[][] getCells() {
+        return cells;
+    }
+
+    //  셀을 클릭하면 호출됨
+    public void cellClicked(int posX, int posY) {
+        movePeice(posX, posY);
+        if(checkComplete()) System.out.println("완성");
+        puzzleFrame.redraw();
+    }
+
+    //  현재 시각을 표시하기 위해 1초에 한번씩 호출됨
+    public String getCurrentTime() {
         String second;
         String minute;
         String hour;
+
+        time++;
 
         second = time % 60 < 10 ? (0 + "") + (time % 60 + "") : time % 60 + "";
         minute = time / 60 % 60 < 10 ? (0 + "") + (time / 60 % 60 + "") : time / 60 % 60 + "";
@@ -136,16 +135,19 @@ public class Board {
         return hour + ":" + minute + ":" + second;
     }
 
-    public Cell[][] getCells() {
-        return cells;
-    }
+    //  퍼즐을 섞으라고 지정된 회수만큼 호출됨
+    public void shuffle() {
+        setNullCell();
 
-    public void cellClicked(int posX, int posY) {
-        for(int time = 0; time < 10000; time++) {
-            System.out.println(timer(time));
-        }
-        movePeice(posX, posY);
-        if(checkComplete()) System.out.println("완성");
+        //for(int  i = 0; i < 100; i++) {
+            int direction = (int)(Math.random() * 4);
+
+            if(direction == 0) changeCell(nullCellX, nullCellY, nullCellX + 1, nullCellY);
+            if(direction == 1) changeCell(nullCellX, nullCellY, nullCellX - 1, nullCellY);
+            if(direction == 2) changeCell(nullCellX, nullCellY, nullCellX, nullCellY + 1);
+            if(direction == 3) changeCell(nullCellX, nullCellY, nullCellX, nullCellY - 1);
+        //}
+
         puzzleFrame.redraw();
     }
 }
